@@ -162,8 +162,8 @@ render_header('Bank ATM');
 <section class="card" style="margin-bottom: 24px;">
   <h2>Выберите вход</h2>
   <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px;">
-    <a class="btn" href="/atm/login.php" target="_blank" rel="noopener" style="padding: 18px 28px; font-size: 1.1rem;">Банкомат</a>
-    <a class="btn" href="/site/login.php" target="_blank" rel="noopener" style="padding: 18px 28px; font-size: 1.1rem;">Сайт</a>
+    <a class="btn" href="/atm/login.php" style="padding: 18px 28px; font-size: 1.1rem;">Банкомат</a>
+    <a class="btn" href="/site/login.php" style="padding: 18px 28px; font-size: 1.1rem;">Сайт</a>
   </div>
 </section>
 

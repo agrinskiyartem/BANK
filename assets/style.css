@@ -36,9 +36,21 @@ body {
   box-shadow: var(--shadow);
 }
 
+.app__header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .app__title {
   margin: 0;
   font-size: 1.6rem;
+}
+
+.app__logout {
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .app__content {

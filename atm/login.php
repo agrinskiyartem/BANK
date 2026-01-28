@@ -14,6 +14,15 @@ $form = [
     'pin' => '',
 ];
 
+if (isset($_GET['msg'])) {
+    $message = (string) $_GET['msg'];
+    if ($message === 'logout') {
+        set_flash('success', 'Сеанс завершён. Войдите снова, чтобы продолжить.');
+    } elseif ($message !== '') {
+        set_flash('warning', 'Получено сообщение: ' . $message);
+    }
+}
+
 $atms = db()->query('SELECT atms.id, atms.name, atms.address, atms.bank_owner_id, banks.name AS bank_name FROM atms JOIN banks ON banks.id = atms.bank_owner_id WHERE atms.is_active = 1 ORDER BY banks.name, atms.name')
     ->fetchAll();
 
