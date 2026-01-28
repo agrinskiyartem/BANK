@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS clients;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS atm_status;
 DROP TABLE IF EXISTS atms;
 DROP TABLE IF EXISTS banks;
 
@@ -38,6 +39,18 @@ CREATE TABLE atms (
   KEY idx_atms_bank_owner_id (bank_owner_id),
   CONSTRAINT fk_atms_bank_owner
     FOREIGN KEY (bank_owner_id) REFERENCES banks(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE atm_status (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  atm_id BIGINT UNSIGNED NOT NULL,
+  status ENUM('online','maintenance','offline') NOT NULL DEFAULT 'online',
+  note VARCHAR(255) NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY ux_atm_status_atm_id (atm_id),
+  KEY idx_atm_status_status (status),
+  CONSTRAINT fk_atm_status_atm
+    FOREIGN KEY (atm_id) REFERENCES atms(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE users (
@@ -159,6 +172,12 @@ INSERT INTO atms (bank_owner_id, name, address, is_active, created_at, updated_a
   (1, 'ATM-NB-02', 'Moscow, Arbat 12', 1, '2024-04-02 10:00:00', '2024-04-11 09:00:00'),
   (2, 'ATM-CF-01', 'Saint Petersburg, Nevsky 5', 1, '2024-04-03 10:30:00', '2024-04-12 09:00:00'),
   (3, 'ATM-CC-01', 'Kazan, Kremlin 3', 1, '2024-04-04 11:00:00', '2024-04-13 09:00:00');
+
+INSERT INTO atm_status (atm_id, status, note, updated_at) VALUES
+  (1, 'online', 'Готов к работе', '2024-04-10 09:00:00'),
+  (2, 'online', 'Загружен наличными', '2024-04-11 09:00:00'),
+  (3, 'maintenance', 'Плановое обслуживание', '2024-04-12 09:00:00'),
+  (4, 'offline', 'Нет связи', '2024-04-13 09:00:00');
 
 INSERT INTO users (login, password_hash, role, created_at, updated_at, is_active) VALUES
   ('admin', '$2y$12$/zvXBwMMjuZwD5Qj0mkev.p5cvQWMD9x/C4FUyMpYcgjNbD7qvXqm', 'admin', '2024-03-01 09:00:00', '2024-03-01 09:00:00', 1),
