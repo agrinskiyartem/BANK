@@ -14,6 +14,15 @@ $form = [
     'password' => '',
 ];
 
+if (isset($_GET['msg'])) {
+    $message = (string) $_GET['msg'];
+    if ($message === 'logout') {
+        set_flash('success', 'Вы вышли из аккаунта.');
+    } elseif ($message !== '') {
+        set_flash('warning', 'Получено сообщение: ' . $message);
+    }
+}
+
 if (is_logged_in()) {
     $user = current_user();
     if ($user && $user['role'] === 'admin') {

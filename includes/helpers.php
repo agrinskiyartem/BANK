@@ -105,6 +105,13 @@ function render_header(string $title = 'Bank ATM'): void
     $flashMessages = get_flash_messages();
     $csrfToken = csrf_token();
     $warningClass = $config['warningActive'] ? 'session-warning--active' : '';
+    $logoutLink = null;
+
+    if (function_exists('is_logged_in') && is_logged_in()) {
+        $logoutLink = '/site/logout.php';
+    } elseif (!empty($_SESSION['atm']) && !empty($_SESSION['card'])) {
+        $logoutLink = '/atm/logout.php';
+    }
 
     echo '<!DOCTYPE html>'; 
     echo '<html lang="ru">';
@@ -118,7 +125,12 @@ function render_header(string $title = 'Bank ATM'): void
     echo '<body>';
     echo '<div class="app">';
     echo '<header class="app__header">';
+    echo '<div class="app__header-content">';
     echo '<h1 class="app__title">' . sanitize($title) . '</h1>';
+    if ($logoutLink) {
+        echo '<a class="btn app__logout" href="' . sanitize($logoutLink) . '">Выйти</a>';
+    }
+    echo '</div>';
     echo '</header>';
 
     echo '<div id="session-warning" class="session-warning ' . $warningClass . '">';
