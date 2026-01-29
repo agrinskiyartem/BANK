@@ -11,8 +11,6 @@ require_once __DIR__ . '/../includes/csrf.php';
 require_login('/site/login.php');
 require_role('admin');
 
-$user = current_user();
-
 $errors = [];
 $statuses = [
     'online' => 'В работе',
@@ -29,85 +27,6 @@ $atm = [
     'status' => 'online',
     'status_note' => '',
 ];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
-    $deleteErrors = [];
-
-    try {
-        require_csrf_token($_POST['csrf_token'] ?? null);
-    } catch (RuntimeException $exception) {
-        $deleteErrors[] = $exception->getMessage();
-    }
-
-    $atmId = filter_var($_POST['atm_id'] ?? null, FILTER_VALIDATE_INT);
-    if (!$atmId) {
-        $deleteErrors[] = 'Некорректный идентификатор банкомата.';
-    }
-
-    if (empty($deleteErrors)) {
-        $db = db();
-        $stmt = $db->prepare('SELECT id, name, address FROM atms WHERE id = :id LIMIT 1');
-        $stmt->execute(['id' => $atmId]);
-        $atmToDelete = $stmt->fetch();
-
-        if (!$atmToDelete) {
-            $deleteErrors[] = 'Банкомат не найден.';
-        } else {
-            $hasWithdrawals = $db->prepare('SELECT COUNT(*) FROM withdrawals WHERE atm_id = :id');
-            $hasWithdrawals->execute(['id' => $atmId]);
-            if ((int) $hasWithdrawals->fetchColumn() > 0) {
-                $deleteErrors[] = 'Нельзя удалить банкомат, пока есть операции.';
-            }
-        }
-    }
-
-    if (empty($deleteErrors)) {
-        $db = db();
-        $now = db_now();
-        try {
-            $db->beginTransaction();
-
-            $deleteStmt = $db->prepare('DELETE FROM atms WHERE id = :id');
-            $deleteStmt->execute(['id' => $atmId]);
-
-            $details = json_encode([
-                'name' => $atmToDelete['name'],
-                'address' => $atmToDelete['address'],
-            ], JSON_UNESCAPED_UNICODE);
-
-            $logStmt = $db->prepare(
-                'INSERT INTO audit_log (actor_user_id, action, entity, entity_id, details, created_at, ip_address, user_agent) '
-                . 'VALUES (:actor_user_id, :action, :entity, :entity_id, :details, :created_at, :ip_address, :user_agent)'
-            );
-            $logStmt->execute([
-                'actor_user_id' => $user['id'] ?? null,
-                'action' => 'delete',
-                'entity' => 'atms',
-                'entity_id' => $atmId,
-                'details' => $details,
-                'created_at' => $now,
-                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
-                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
-            ]);
-
-            $db->commit();
-            set_flash('success', 'Банкомат удалён.');
-        } catch (Throwable $exception) {
-            if ($db->inTransaction()) {
-                $db->rollBack();
-            }
-            $deleteErrors[] = 'Не удалось удалить банкомат. Попробуйте позже.';
-        }
-    }
-
-    if (!empty($deleteErrors)) {
-        foreach ($deleteErrors as $message) {
-            set_flash('error', $message);
-        }
-    }
-
-    redirect('/site/atms.php');
-}
 
 $editId = null;
 if (isset($_GET['edit']) || isset($_GET['id'])) {
@@ -368,12 +287,6 @@ render_header('Администрирование банкоматов');
               <td style="padding: 6px 0;">
                 <div style="display: inline-flex; align-items: center; gap: 8px;">
                   <a href="/site/atms.php?edit=1&id=<?= (int) $row['id'] ?>">Редактировать</a>
-                  <form method="post" action="/site/atms.php" style="display: inline;" onsubmit="return confirm('Удалить банкомат?');">
-                    <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="atm_id" value="<?= (int) $row['id'] ?>">
-                    <button type="submit" class="link-button">Удалить</button>
-                  </form>
                 </div>
               </td>
             </tr>

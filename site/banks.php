@@ -20,99 +20,6 @@ $bank = [
     'bic' => '',
 ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
-    $deleteErrors = [];
-
-    try {
-        require_csrf_token($_POST['csrf_token'] ?? null);
-    } catch (RuntimeException $exception) {
-        $deleteErrors[] = $exception->getMessage();
-    }
-
-    $bankId = filter_var($_POST['bank_id'] ?? null, FILTER_VALIDATE_INT);
-    if (!$bankId) {
-        $deleteErrors[] = 'Некорректный идентификатор банка.';
-    }
-
-    if (empty($deleteErrors)) {
-        $db = db();
-        $stmt = $db->prepare('SELECT id, name, bic FROM banks WHERE id = :id LIMIT 1');
-        $stmt->execute(['id' => $bankId]);
-        $bankToDelete = $stmt->fetch();
-
-        if (!$bankToDelete) {
-            $deleteErrors[] = 'Банк не найден.';
-        } else {
-            $hasAtms = $db->prepare('SELECT COUNT(*) FROM atms WHERE bank_owner_id = :id');
-            $hasAtms->execute(['id' => $bankId]);
-            if ((int) $hasAtms->fetchColumn() > 0) {
-                $deleteErrors[] = 'Нельзя удалить банк, пока у него есть банкоматы.';
-            }
-
-            $hasCards = $db->prepare('SELECT COUNT(*) FROM cards WHERE bank_issuer_id = :id');
-            $hasCards->execute(['id' => $bankId]);
-            if ((int) $hasCards->fetchColumn() > 0) {
-                $deleteErrors[] = 'Нельзя удалить банк, пока есть выпущенные карты.';
-            }
-
-            $hasWithdrawals = $db->prepare(
-                'SELECT COUNT(*) FROM withdrawals WHERE bank_owner_id = :id OR bank_issuer_id = :id'
-            );
-            $hasWithdrawals->execute(['id' => $bankId]);
-            if ((int) $hasWithdrawals->fetchColumn() > 0) {
-                $deleteErrors[] = 'Нельзя удалить банк, пока есть операции по банкоматам или картам.';
-            }
-        }
-    }
-
-    if (empty($deleteErrors)) {
-        $db = db();
-        $now = db_now();
-        try {
-            $db->beginTransaction();
-
-            $deleteStmt = $db->prepare('DELETE FROM banks WHERE id = :id');
-            $deleteStmt->execute(['id' => $bankId]);
-
-            $details = json_encode([
-                'name' => $bankToDelete['name'],
-                'bic' => $bankToDelete['bic'],
-            ], JSON_UNESCAPED_UNICODE);
-
-            $logStmt = $db->prepare(
-                'INSERT INTO audit_log (actor_user_id, action, entity, entity_id, details, created_at, ip_address, user_agent) '
-                . 'VALUES (:actor_user_id, :action, :entity, :entity_id, :details, :created_at, :ip_address, :user_agent)'
-            );
-            $logStmt->execute([
-                'actor_user_id' => $user['id'] ?? null,
-                'action' => 'delete',
-                'entity' => 'banks',
-                'entity_id' => $bankId,
-                'details' => $details,
-                'created_at' => $now,
-                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
-                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
-            ]);
-
-            $db->commit();
-            set_flash('success', 'Банк удалён.');
-        } catch (Throwable $exception) {
-            if ($db->inTransaction()) {
-                $db->rollBack();
-            }
-            $deleteErrors[] = 'Не удалось удалить банк. Попробуйте позже.';
-        }
-    }
-
-    if (!empty($deleteErrors)) {
-        foreach ($deleteErrors as $message) {
-            set_flash('error', $message);
-        }
-    }
-
-    redirect('/site/banks.php');
-}
-
 $editId = null;
 if (isset($_GET['edit']) || isset($_GET['id'])) {
     $editId = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT);
@@ -303,12 +210,6 @@ render_header('Администрирование банков');
               <td style="padding: 6px 0;"><?= sanitize($row['bic'] ?? '—') ?></td>
               <td style="padding: 6px 0;">
                 <a href="/site/banks.php?edit=1&id=<?= (int) $row['id'] ?>">Редактировать</a>
-                <form method="post" action="/site/banks.php" style="display: inline; margin-left: 8px;" onsubmit="return confirm('Удалить банк?');">
-                  <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
-                  <input type="hidden" name="action" value="delete">
-                  <input type="hidden" name="bank_id" value="<?= (int) $row['id'] ?>">
-                  <button type="submit" class="link-button">Удалить</button>
-                </form>
               </td>
             </tr>
           <?php endforeach; ?>
