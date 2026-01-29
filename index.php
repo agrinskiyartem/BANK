@@ -171,6 +171,11 @@ render_header('Bank ATM');
   <h2>Регистрация клиента</h2>
   <p>Если вы ещё не зарегистрированы, заполните форму ниже.</p>
 
+    <?php if (isset($_GET['msg']) && $_GET['msg'] === 'registered') : ?>
+    <div class="flash__message flash__message--success" style="margin-bottom: 16px;">Клиент зарегистрирован.</div>
+  <?php endif; ?>
+
+
   <div id="client-error" class="flash__message flash__message--error" style="display: none; margin-bottom: 16px;"></div>
 
   <form id="registration-form" method="post" action="/index.php">
