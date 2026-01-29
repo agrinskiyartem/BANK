@@ -366,13 +366,15 @@ render_header('Администрирование банкоматов');
               <td style="padding: 6px 0;"><?= sanitize($row['bank_name']) ?></td>
               <td style="padding: 6px 0;"><?= (int) $row['is_active'] === 1 ? 'Да' : 'Нет' ?></td>
               <td style="padding: 6px 0;">
-                <a href="/site/atms.php?edit=1&id=<?= (int) $row['id'] ?>">Редактировать</a>
-                <form method="post" action="/site/atms.php" style="display: inline; margin-left: 8px;" onsubmit="return confirm('Удалить банкомат?');">
-                  <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
-                  <input type="hidden" name="action" value="delete">
-                  <input type="hidden" name="atm_id" value="<?= (int) $row['id'] ?>">
-                  <button type="submit" class="link-button">Удалить</button>
-                </form>
+                <div style="display: inline-flex; align-items: center; gap: 8px;">
+                  <a href="/site/atms.php?edit=1&id=<?= (int) $row['id'] ?>">Редактировать</a>
+                  <form method="post" action="/site/atms.php" style="display: inline;" onsubmit="return confirm('Удалить банкомат?');">
+                    <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="atm_id" value="<?= (int) $row['id'] ?>">
+                    <button type="submit" class="link-button">Удалить</button>
+                  </form>
+                </div>
               </td>
             </tr>
           <?php endforeach; ?>
