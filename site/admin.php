@@ -31,6 +31,7 @@ render_header('Панель администратора');
     <a class="btn" href="/site/atms.php">Банкоматы</a>
     <a class="btn" href="/site/users.php">Пользователи</a>
     <a class="btn" href="/site/analytics.php">Аналитика</a>
+    <a class="btn" href="/site/admin.php">Списания</a>
   </div>
 </section>
 

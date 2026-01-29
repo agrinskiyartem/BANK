@@ -111,9 +111,16 @@ body {
 
 .app__header-content {
   display: flex;
-  align-items: center;
-    justify-content: flex-start;
+  flex-direction: column;
   gap: 16px;
+}
+
+.app__header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .app__title {
@@ -125,6 +132,20 @@ body {
   text-decoration: none;
   white-space: nowrap;
   margin-left: 16px;
+}
+
+.app__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.app__nav-link {
+  text-decoration: none;
+}
+
+.app__nav-link--active {
+  background: var(--color-primary-dark);
 }
 
 .app__content {
