@@ -100,7 +100,7 @@ function get_last_atm_id(): ?int
 }
 
 // function render_header(string $title = 'Bank ATM'): void
-function render_header(string $title = 'Bank ATM', string $bodyClass = ''): void
+function render_header(string $title = 'Bank ATM', string $bodyClass = '', bool $showSessionWarning = true): void
 
 
 
@@ -148,9 +148,11 @@ function render_header(string $title = 'Bank ATM', string $bodyClass = ''): void
     echo '</div>';
     echo '</header>';
 
-    echo '<div id="session-warning" class="session-warning ' . $warningClass . '">';
-    echo '<p>Сессия скоро завершится из-за неактивности.</p>';
-    echo '</div>';
+    if ($showSessionWarning) {
+        echo '<div id="session-warning" class="session-warning ' . $warningClass . '">';
+        echo '<p>Сессия скоро завершится из-за неактивности.</p>';
+        echo '</div>';
+    }
 
     if (!empty($flashMessages)) {
         echo '<div class="flash">';
