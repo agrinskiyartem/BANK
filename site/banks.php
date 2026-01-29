@@ -161,10 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 'save') === 's
     }
 
     if ($bic !== null) {
-        $stmt = db()->prepare('SELECT id FROM banks WHERE bic = :bic AND (:id IS NULL OR id != :id) LIMIT 1');
+        $stmt = db()->prepare(
+            'SELECT id FROM banks WHERE bic = :bic AND (:id IS NULL OR id != :id_check) LIMIT 1'
+        );
         $stmt->execute([
             'bic' => $bic,
             'id' => $bankId,
+            'id_check' => $bankId,
         ]);
         if ($stmt->fetch()) {
             $errors[] = 'Банк с указанным БИК уже существует.';
