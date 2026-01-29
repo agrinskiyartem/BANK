@@ -99,7 +99,12 @@ function get_last_atm_id(): ?int
     return $value === false ? null : (int) $value;
 }
 
-function render_header(string $title = 'Bank ATM'): void
+// function render_header(string $title = 'Bank ATM'): void
+function render_header(string $title = 'Bank ATM', string $bodyClass = ''): void
+
+
+
+
 {
     $config = session_config();
     $flashMessages = get_flash_messages();
@@ -113,6 +118,10 @@ function render_header(string $title = 'Bank ATM'): void
         $logoutLink = '/atm/logout.php';
     }
 
+
+
+
+
     echo '<!DOCTYPE html>'; 
     echo '<html lang="ru">';
     echo '<head>';
@@ -122,7 +131,13 @@ function render_header(string $title = 'Bank ATM'): void
     echo '<title>' . sanitize($title) . '</title>';
     echo '<link rel="stylesheet" href="/assets/style.css">';
     echo '</head>';
-    echo '<body>';
+    // echo '<body>';
+    $bodyClassAttr = $bodyClass !== '' ? ' class="' . sanitize($bodyClass) . '"' : '';
+    echo '<body' . $bodyClassAttr . '>';
+
+
+
+
     echo '<div class="app">';
     echo '<header class="app__header">';
     echo '<div class="app__header-content">';
