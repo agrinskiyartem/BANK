@@ -110,8 +110,8 @@ if (empty($errors)) {
                     'bank_issuer_id' => (int) $panel['bank_issuer_id'],
                     'bank_owner_id' => (int) $panel['bank_owner_id'],
                     'amount' => $amount,
-                    'commission_amount' => $commission,
-                    'total_amount' => $total,
+                    'commission_amount' => 0,
+                    'total_amount' => 0,
                     'mode_safe' => 1,
                     'status' => 'success',
                     'created_at' => $createdAt,
@@ -135,20 +135,19 @@ if (empty($errors)) {
                 ];
             }
         } else {
-            $createdAt = db_now();
-
-            $updateStmt = $pdo->prepare(
-                'UPDATE accounts SET balance = balance - :total '
-                . 'WHERE id = :account_id AND balance >= :total'
-            );
-            $updateStmt->execute([
-                'total' => $total,
-                'account_id' => (int) $panel['account_id'],
-            ]);
-
-            if ($updateStmt->rowCount() === 0) {
+            if ($balance < $total) {
                 $errors[] = 'Недостаточно средств для снятия.';
             } else {
+                $createdAt = db_now();
+
+                usleep(350000);
+
+                $updateStmt = $pdo->prepare('UPDATE accounts SET balance = balance - :total WHERE id = :account_id');
+                $updateStmt->execute([
+                    'total' => $total,
+                    'account_id' => (int) $panel['account_id'],
+                ]);
+
                 $balanceStmt = $pdo->prepare('SELECT balance FROM accounts WHERE id = :account_id');
                 $balanceStmt->execute([
                     'account_id' => (int) $panel['account_id'],
@@ -170,8 +169,8 @@ if (empty($errors)) {
                     'bank_issuer_id' => (int) $panel['bank_issuer_id'],
                     'bank_owner_id' => (int) $panel['bank_owner_id'],
                     'amount' => $amount,
-                    'commission_amount' => $commission,
-                    'total_amount' => $total,
+                    'commission_amount' => 0,
+                    'total_amount' => 0,
                     'mode_safe' => 0,
                     'status' => 'success',
                     'created_at' => $createdAt,
@@ -195,7 +194,12 @@ if (empty($errors)) {
         if (isset($pdo) && $pdo->inTransaction()) {
             $pdo->rollBack();
         }
-        $errors[] = 'Не удалось выполнить операцию. Попробуйте позже.';
+        if ($isSafeMode) {
+            $errors[] = 'Не удалось выполнить операцию. Попробуйте позже.';
+        } else {
+            error_log((string) $exception);
+            $errors[] = 'Операция не выполнена: ' . $exception->getMessage();
+        }
     }
 }
 
