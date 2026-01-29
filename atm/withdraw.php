@@ -22,7 +22,6 @@ $cardSession = $_SESSION['card'];
 
 $safeParam = (string) ($_GET['safe'] ?? '1');
 $isSafeMode = $safeParam !== '0';
-$modeLabel = $isSafeMode ? 'safe (SELECT ... FOR UPDATE)' : 'unsafe (без блокировки строк)';
 
 $errors = [];
 $amountRaw = str_replace(',', '.', trim((string) ($_POST['amount'] ?? '')));
@@ -154,7 +153,6 @@ render_header('Снятие наличных', 'atm-body');
 
 
   <h2>Результат операции</h2>
-  <p style="color: #64748b;">Режим конкурентного доступа: <?= sanitize($modeLabel) ?>.</p>
 
   <?php if (!empty($errors)): ?>
     <div class="flash__message flash__message--error" style="margin-bottom: 16px;">
