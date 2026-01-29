@@ -70,7 +70,7 @@ try {
         . 'JOIN banks AS owner ON owner.id = w.bank_owner_id '
         . 'JOIN banks AS issuer ON issuer.id = w.bank_issuer_id '
         . 'JOIN cards AS c ON c.id = w.card_id '
-        . 'JOIN users AS u ON u.id = c.client_id '
+        . 'JOIN clients AS cl ON cl.id = c.client_id '
         . $whereSql . ' '
         . 'GROUP BY owner.id, owner.name '
         . 'ORDER BY commission_total DESC';

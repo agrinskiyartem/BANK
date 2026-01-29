@@ -29,7 +29,12 @@ function authenticate_user(string $login, string $password): bool
         return false;
     }
 
-    $clientId = $user['role'] === 'client' ? (int) $user['id'] : null;
+    $clientId = null;
+    if ($user['role'] === 'client') {
+        $clientStmt = db()->prepare('SELECT id FROM clients WHERE user_id = :user_id LIMIT 1');
+        $clientStmt->execute(['user_id' => $user['id']]);
+        $clientId = $clientStmt->fetchColumn() ?: null;
+    }
 
     $_SESSION['user'] = [
         'id' => (int) $user['id'],

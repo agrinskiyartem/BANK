@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS audit_log;
 DROP TABLE IF EXISTS withdrawals;
 DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS cards;
+DROP TABLE IF EXISTS clients;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS atm_status;
 DROP TABLE IF EXISTS atms;
@@ -57,12 +58,22 @@ CREATE TABLE users (
   login VARCHAR(255) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   role ENUM('admin','client') NOT NULL,
-  full_name VARCHAR(255) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   UNIQUE KEY ux_users_login (login),
   KEY idx_users_role (role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE clients (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL,
+  UNIQUE KEY ux_clients_user_id (user_id),
+  CONSTRAINT fk_clients_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE cards (
@@ -81,7 +92,7 @@ CREATE TABLE cards (
   CONSTRAINT fk_cards_bank_issuer
     FOREIGN KEY (bank_issuer_id) REFERENCES banks(id),
   CONSTRAINT fk_cards_client
-    FOREIGN KEY (client_id) REFERENCES users(id)
+    FOREIGN KEY (client_id) REFERENCES clients(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE accounts (
@@ -168,14 +179,18 @@ INSERT INTO atm_status (atm_id, status, note, updated_at) VALUES
   (3, 'maintenance', 'Плановое обслуживание', '2024-04-12 09:00:00'),
   (4, 'offline', 'Нет связи', '2024-04-13 09:00:00');
 
-INSERT INTO users (login, password_hash, role, full_name, created_at, updated_at, is_active) VALUES
-  ('admin', '$2y$12$/zvXBwMMjuZwD5Qj0mkev.p5cvQWMD9x/C4FUyMpYcgjNbD7qvXqm', 'admin', NULL, '2024-03-01 09:00:00', '2024-03-01 09:00:00', 1),
-  ('client1', '$2y$12$MXohwtluHo8A4oLXtRjiuuD5HroRZqGrBOjvqidYcuZSWQhC8S0Su', 'client', 'Ivan Petrov', '2024-03-02 09:00:00', '2024-03-02 09:00:00', 1),
-  ('client2', '$2y$12$Pqytd782SUXSCdTauNeLdueEKkWyfuZrpVY54imdVGxMDa9yN2qRK', 'client', 'Olga Smirnova', '2024-03-03 09:00:00', '2024-03-03 09:00:00', 1);
+INSERT INTO users (login, password_hash, role, created_at, updated_at, is_active) VALUES
+  ('admin', '$2y$12$/zvXBwMMjuZwD5Qj0mkev.p5cvQWMD9x/C4FUyMpYcgjNbD7qvXqm', 'admin', '2024-03-01 09:00:00', '2024-03-01 09:00:00', 1),
+  ('client1', '$2y$12$MXohwtluHo8A4oLXtRjiuuD5HroRZqGrBOjvqidYcuZSWQhC8S0Su', 'client', '2024-03-02 09:00:00', '2024-03-02 09:00:00', 1),
+  ('client2', '$2y$12$Pqytd782SUXSCdTauNeLdueEKkWyfuZrpVY54imdVGxMDa9yN2qRK', 'client', '2024-03-03 09:00:00', '2024-03-03 09:00:00', 1);
+
+INSERT INTO clients (user_id, full_name, created_at, updated_at) VALUES
+  (2, 'Ivan Petrov', '2024-03-02 10:00:00', '2024-03-02 10:00:00'),
+  (3, 'Olga Smirnova', '2024-03-03 10:00:00', '2024-03-03 10:00:00');
 
 INSERT INTO cards (card_number, pin_hash, bank_issuer_id, client_id, created_at, updated_at, expires_at, is_blocked) VALUES
-  ('4111111111111111', '$2y$12$YgtbmPy3L2NG./4024zvJ.ZRJmIS5qV.xchY/rZbXiXOtgGyEGdYO', 1, 2, '2024-03-05 09:00:00', '2024-03-05 09:00:00', '2027-03-01', 0),
-  ('5500000000000004', '$2y$12$2Fy1FMS3G/he3hfYRoJQEeN4dpVDfCUmPjqpCxKl2EJdfN5ABsYo6', 2, 3, '2024-03-06 09:00:00', '2024-03-06 09:00:00', '2027-03-01', 0);
+  ('4111111111111111', '$2y$12$YgtbmPy3L2NG./4024zvJ.ZRJmIS5qV.xchY/rZbXiXOtgGyEGdYO', 1, 1, '2024-03-05 09:00:00', '2024-03-05 09:00:00', '2027-03-01', 0),
+  ('5500000000000004', '$2y$12$2Fy1FMS3G/he3hfYRoJQEeN4dpVDfCUmPjqpCxKl2EJdfN5ABsYo6', 2, 2, '2024-03-06 09:00:00', '2024-03-06 09:00:00', '2027-03-01', 0);
 
 INSERT INTO accounts (card_id, balance, currency, updated_at) VALUES
   (1, 50000.00, 'RUB', '2024-04-15 09:00:00'),
