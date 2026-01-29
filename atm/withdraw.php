@@ -44,7 +44,9 @@ if (empty($errors)) {
 
     try {
         $pdo = db();
-        $pdo->beginTransaction();
+        if ($isSafeMode) {
+            $pdo->beginTransaction();
+        }
 
         $query = 'SELECT accounts.id AS account_id, accounts.balance, accounts.currency, '
             . 'cards.bank_issuer_id, atms.id AS atm_id, atms.name AS atm_name, atms.address AS atm_address, '
@@ -82,7 +84,9 @@ if (empty($errors)) {
         }
 
         if ($balance < $total) {
-            $pdo->rollBack();
+            if ($isSafeMode && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             $errors[] = 'Недостаточно средств для снятия.';
         } else {
             $newBalance = round($balance - $total, 2);
@@ -112,7 +116,9 @@ if (empty($errors)) {
                 'created_at' => $createdAt,
             ]);
 
-            $pdo->commit();
+            if ($isSafeMode && $pdo->inTransaction()) {
+                $pdo->commit();
+            }
 
             $operation = [
                 'amount' => $amount,
