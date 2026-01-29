@@ -90,8 +90,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
+        $fullNameSql = users_full_name_sql('users', 'full_name');
         $cardStmt = db()->prepare(
-            'SELECT cards.id, cards.pin_hash, cards.is_blocked, cards.expires_at, cards.client_id, users.full_name '
+            'SELECT cards.id, cards.pin_hash, cards.is_blocked, cards.expires_at, cards.client_id, '
+            . $fullNameSql . ' '
             . 'FROM cards '
             . 'JOIN users ON users.id = cards.client_id '
             . 'WHERE cards.card_number = :card_number '

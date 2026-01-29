@@ -17,7 +17,8 @@ if ($clientId === null) {
     redirect('/site/login.php');
 }
 
-$clientStmt = db()->prepare('SELECT full_name FROM users WHERE id = :id LIMIT 1');
+$fullNameSql = users_full_name_sql('users', 'full_name');
+$clientStmt = db()->prepare('SELECT ' . $fullNameSql . ' FROM users WHERE id = :id LIMIT 1');
 $clientStmt->execute(['id' => $clientId]);
 $client = $clientStmt->fetch();
 
