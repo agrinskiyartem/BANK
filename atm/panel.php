@@ -38,11 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $stmt = db()->prepare(
-    'SELECT cards.card_number, cards.bank_issuer_id, clients.full_name, accounts.balance, accounts.currency, '
+    'SELECT cards.card_number, cards.bank_issuer_id, users.full_name, accounts.balance, accounts.currency, '
     . 'issuer.name AS issuer_bank_name, atms.name AS atm_name, atms.address AS atm_address, '
     . 'owner.id AS owner_bank_id, owner.name AS owner_bank_name '
     . 'FROM cards '
-    . 'JOIN clients ON clients.id = cards.client_id '
+    . 'JOIN users ON users.id = cards.client_id '
     . 'JOIN accounts ON accounts.card_id = cards.id '
     . 'JOIN banks AS issuer ON issuer.id = cards.bank_issuer_id '
     . 'JOIN atms ON atms.id = :atm_id '

@@ -21,10 +21,9 @@ function mask_card_number(string $number): string
 }
 
 $usersStmt = db()->query(
-    'SELECT users.id, users.login, users.role, users.is_active, users.created_at, '
-    . 'clients.id AS client_id, clients.full_name '
+    'SELECT users.id, users.login, users.role, users.is_active, users.created_at, users.full_name, '
+    . "CASE WHEN users.role = 'client' THEN users.id ELSE NULL END AS client_id "
     . 'FROM users '
-    . 'LEFT JOIN clients ON clients.user_id = users.id '
     . 'ORDER BY users.created_at DESC'
 );
 $users = $usersStmt->fetchAll();
