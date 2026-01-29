@@ -111,6 +111,7 @@ function render_header(string $title = 'Bank ATM', string $bodyClass = '', bool 
     $csrfToken = csrf_token();
     $warningClass = $config['warningActive'] ? 'session-warning--active' : '';
     $logoutLink = null;
+    $adminNavItems = [];
 
     if (function_exists('is_logged_in') && is_logged_in()) {
         $logoutLink = '/site/logout.php';
@@ -118,6 +119,18 @@ function render_header(string $title = 'Bank ATM', string $bodyClass = '', bool 
         $logoutLink = '/atm/logout.php';
     }
 
+    if (function_exists('current_user')) {
+        $user = current_user();
+        if ($user && ($user['role'] ?? null) === 'admin') {
+            $adminNavItems = [
+                '/site/banks.php' => 'Банки',
+                '/site/atms.php' => 'Банкоматы',
+                '/site/users.php' => 'Пользователи',
+                '/site/analytics.php' => 'Аналитика',
+                '/site/admin.php' => 'Списания',
+            ];
+        }
+    }
 
 
 
@@ -141,9 +154,22 @@ function render_header(string $title = 'Bank ATM', string $bodyClass = '', bool 
     echo '<div class="app">';
     echo '<header class="app__header">';
     echo '<div class="app__header-content">';
+    echo '<div class="app__header-main">';
     echo '<h1 class="app__title">' . sanitize($title) . '</h1>';
     if ($logoutLink) {
         echo '<a class="btn app__logout" href="' . sanitize($logoutLink) . '">Выйти</a>';
+    }
+    echo '</div>';
+    if (!empty($adminNavItems)) {
+        $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+        echo '<nav class="app__nav" aria-label="Административные разделы">';
+        foreach ($adminNavItems as $path => $label) {
+            $isActive = $currentPath === $path ? ' app__nav-link--active' : '';
+            echo '<a class="btn app__nav-link' . $isActive . '" href="' . sanitize($path) . '">'
+                . sanitize($label)
+                . '</a>';
+        }
+        echo '</nav>';
     }
     echo '</div>';
     echo '</header>';
