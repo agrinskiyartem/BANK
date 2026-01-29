@@ -12,8 +12,8 @@ function db(): PDO
 
     $host = getenv('DB_HOST') ?: '127.0.0.1';
     $name = getenv('DB_NAME') ?: 'bank_atm';
-    $user = getenv('DB_USER') ?: 'root';
-    $pass = getenv('DB_PASS') ?: '';
+    $user = getenv('DB_USER') ?: 'bank_user';
+    $pass = getenv('DB_PASS') ?: 'bank_pass';
     $charset = getenv('DB_CHARSET') ?: 'utf8mb4';
 
     $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', $host, $name, $charset);
@@ -38,3 +38,7 @@ function db_now(): string
 {
     return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 }
+
+
+
+
