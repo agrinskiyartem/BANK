@@ -136,7 +136,7 @@ if (isset($_GET['edit']) || isset($_GET['id'])) {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? 'save') === 'save') {
     try {
         require_csrf_token($_POST['csrf_token'] ?? null);
     } catch (RuntimeException $exception) {
@@ -257,8 +257,9 @@ render_header('Администрирование банков');
     </div>
   <?php endif; ?>
 
-  <form id="bank-form" method="post" style="display: grid; gap: 12px; max-width: 520px;">
+  <form id="bank-form" method="post" action="/site/banks.php" style="display: grid; gap: 12px; max-width: 520px;">
     <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
+    <input type="hidden" name="action" value="save">
     <?php if ($bank['id']) : ?>
       <input type="hidden" name="bank_id" value="<?= (int) $bank['id'] ?>">
     <?php endif; ?>
