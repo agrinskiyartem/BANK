@@ -198,6 +198,20 @@ button:hover,
   background: var(--color-primary-dark);
 }
 
+.link-button {
+  background: transparent;
+  border: none;
+  color: var(--color-danger);
+  padding: 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+  background: transparent;
+}
+
 input,
 select,
 textarea {
