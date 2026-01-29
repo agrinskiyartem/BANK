@@ -16,20 +16,20 @@
 1) `banks`
 2) `atms`
 3) `users`
-4) `cards`
-5) `accounts` — баланс карты
-6) `withdrawals` — операции снятия
-7) `audit_log` — демонстрация записи в 2 таблицы и/или логирование
-
-Профиль клиента хранится в `users` (поле `full_name`) для `role=client`.
+4) `clients` — профиль клиента, связь 1:1 с `users` для `role=client`
+5) `cards`
+6) `accounts` — баланс карты
+7) `withdrawals` — операции снятия
+8) `audit_log` — демонстрация записи в 2 таблицы и/или логирование
 
 ## C) Ключевые поля (обязательные имена)
 > Ниже перечислены обязательные поля. Дополнительные поля можно добавлять при необходимости, но **нельзя переименовывать** перечисленные.
 
 - **`banks`**: `id`, `name`, `bic` (nullable), `created_at`
 - **`atms`**: `id`, `bank_owner_id` (FK → `banks.id`), `name`, `address`, `is_active`, `created_at`
-- **`users`**: `id`, `login`, `password_hash`, `role`, `full_name`, `created_at`
-- **`cards`**: `id`, `card_number` (UNIQUE), `pin_hash`, `bank_issuer_id` (FK → `banks.id`), `client_id` (FK → `users.id`), `created_at`, `is_blocked`
+- **`users`**: `id`, `login`, `password_hash`, `role`, `created_at`
+- **`clients`**: `id`, `user_id` (FK → `users.id` UNIQUE), `full_name`, `created_at`
+- **`cards`**: `id`, `card_number` (UNIQUE), `pin_hash`, `bank_issuer_id` (FK → `banks.id`), `client_id` (FK → `clients.id`), `created_at`, `is_blocked`
 - **`accounts`**: `id`, `card_id` (FK → `cards.id` UNIQUE), `balance`, `updated_at`
 - **`withdrawals`**: `id`, `card_id`, `atm_id`, `bank_issuer_id`, `bank_owner_id`, `amount`, `commission_amount`, `total_amount`, `created_at`, `mode_safe` (0/1)
 - **`audit_log`**: `id`, `actor_user_id` (nullable FK → `users.id`), `action`, `entity`, `entity_id`, `details`, `created_at`
@@ -38,6 +38,7 @@
 - `banks`: `updated_at`
 - `atms`: `updated_at`
 - `users`: `updated_at`, `is_active`
+- `clients`: `updated_at`
 - `cards`: `updated_at`, `expires_at`
 - `accounts`: `currency` (например `RUB`)
 - `withdrawals`: `status` (например `success|failed`), `error_reason` (nullable)
@@ -105,12 +106,13 @@
 - Таймаут: 120 секунд, с серверным logout + JS предупреждением
 
 ### Таблицы (строгие названия)
-- `banks`, `atms`, `users`, `cards`, `accounts`, `withdrawals`, `audit_log`
+- `banks`, `atms`, `users`, `clients`, `cards`, `accounts`, `withdrawals`, `audit_log`
 
 ### Ключевые поля (строго перечисленные)
 - `banks`: `id`, `name`, `bic`, `created_at`
 - `atms`: `id`, `bank_owner_id`, `name`, `address`, `is_active`, `created_at`
-- `users`: `id`, `login`, `password_hash`, `role`, `full_name`, `created_at`
+- `users`: `id`, `login`, `password_hash`, `role`, `created_at`
+- `clients`: `id`, `user_id`, `full_name`, `created_at`
 - `cards`: `id`, `card_number`, `pin_hash`, `bank_issuer_id`, `client_id`, `created_at`, `is_blocked`
 - `accounts`: `id`, `card_id`, `balance`, `updated_at`
 - `withdrawals`: `id`, `card_id`, `atm_id`, `bank_issuer_id`, `bank_owner_id`, `amount`, `commission_amount`, `total_amount`, `created_at`, `mode_safe`

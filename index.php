@@ -98,18 +98,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            $userStmt = $pdo->prepare('INSERT INTO users (login, password_hash, role, full_name, created_at, updated_at, is_active) VALUES (:login, :password_hash, :role, :full_name, :created_at, :updated_at, 1)');
+            $userStmt = $pdo->prepare('INSERT INTO users (login, password_hash, role, created_at, updated_at, is_active) VALUES (:login, :password_hash, :role, :created_at, :updated_at, 1)');
             $now = db_now();
             $userStmt->execute([
                 'login' => $form['login'],
                 'password_hash' => password_hash($form['password'], PASSWORD_DEFAULT),
                 'role' => 'client',
-                'full_name' => $form['full_name'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
 
             $userId = (int) $pdo->lastInsertId();
+
+            $clientStmt = $pdo->prepare('INSERT INTO clients (user_id, full_name, created_at, updated_at) VALUES (:user_id, :full_name, :created_at, :updated_at)');
+            $clientStmt->execute([
+                'user_id' => $userId,
+                'full_name' => $form['full_name'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $clientId = (int) $pdo->lastInsertId();
             $expiresAt = (new DateTimeImmutable('+3 years'))->format('Y-m-d');
 
             $cardStmt = $pdo->prepare('INSERT INTO cards (card_number, pin_hash, bank_issuer_id, client_id, created_at, updated_at, expires_at, is_blocked) VALUES (:card_number, :pin_hash, :bank_issuer_id, :client_id, :created_at, :updated_at, :expires_at, 0)');
@@ -117,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'card_number' => $form['card_number'],
                 'pin_hash' => password_hash($form['pin'], PASSWORD_DEFAULT),
                 'bank_issuer_id' => (int) $form['bank_issuer_id'],
-                'client_id' => $userId,
+                'client_id' => $clientId,
                 'created_at' => $now,
                 'updated_at' => $now,
                 'expires_at' => $expiresAt,
