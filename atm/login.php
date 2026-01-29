@@ -14,6 +14,7 @@ $form = [
     'pin' => '',
 ];
 
+
 if (isset($_GET['msg'])) {
     $message = (string) $_GET['msg'];
     if ($message === 'logout') {
@@ -22,6 +23,8 @@ if (isset($_GET['msg'])) {
         set_flash('warning', 'Получено сообщение: ' . $message);
     }
 }
+
+
 
 $atms = db()->query('SELECT atms.id, atms.name, atms.address, atms.bank_owner_id, banks.name AS bank_name FROM atms JOIN banks ON banks.id = atms.bank_owner_id WHERE atms.is_active = 1 ORDER BY banks.name, atms.name')
     ->fetchAll();
@@ -134,9 +137,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-render_header('Вход в банкомат');
+
+// render_header('Вход в банкомат');
+render_header('Вход в банкомат', 'atm-body');
+
+
 ?>
-<section class="card">
+
+
+
+<!-- <section class="card"> -->
+<div class="atm-terminal">
+  <section class="card">
+
+
+
+    <a class="btn" href="/index.php" style="display: inline-flex; margin-bottom: 16px; text-decoration: none;">Назад</a>
   <h2>Выберите банкомат</h2>
   <p>Выбранный банкомат будет запомнен на 10 минут.</p>
 
@@ -171,8 +187,17 @@ render_header('Вход в банкомат');
     </label>
 
     <button type="submit" style="margin-top: 16px;">Войти</button>
+
   </form>
 </section>
+
+
+
+<!--  -->
+</div>
+
+
+
 
 <script>
   (function () {
