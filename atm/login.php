@@ -91,9 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $cardStmt = db()->prepare(
-            'SELECT cards.id, cards.pin_hash, cards.is_blocked, cards.expires_at, cards.client_id, clients.full_name '
+            'SELECT cards.id, cards.pin_hash, cards.is_blocked, cards.expires_at, cards.client_id, users.full_name '
             . 'FROM cards '
-            . 'JOIN clients ON clients.id = cards.client_id '
+            . 'JOIN users ON users.id = cards.client_id '
             . 'WHERE cards.card_number = :card_number '
             . 'LIMIT 1'
         );
