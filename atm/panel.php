@@ -37,8 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$fullNameSql = users_full_name_sql('users', 'full_name');
 $stmt = db()->prepare(
-    'SELECT cards.card_number, cards.bank_issuer_id, users.full_name, accounts.balance, accounts.currency, '
+    'SELECT cards.card_number, cards.bank_issuer_id, ' . $fullNameSql . ', accounts.balance, accounts.currency, '
     . 'issuer.name AS issuer_bank_name, atms.name AS atm_name, atms.address AS atm_address, '
     . 'owner.id AS owner_bank_id, owner.name AS owner_bank_name '
     . 'FROM cards '
