@@ -83,55 +83,113 @@ if (empty($errors)) {
             throw new RuntimeException('Сумма должна быть больше 0.');
         }
 
-        if ($balance < $total) {
-            if ($isSafeMode && $pdo->inTransaction()) {
-                $pdo->rollBack();
+        if ($isSafeMode) {
+            if ($balance < $total) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                $errors[] = 'Недостаточно средств для снятия.';
+            } else {
+                $newBalance = round($balance - $total, 2);
+                $createdAt = db_now();
+
+                $updateStmt = $pdo->prepare('UPDATE accounts SET balance = :balance WHERE id = :account_id');
+                $updateStmt->execute([
+                    'balance' => $newBalance,
+                    'account_id' => (int) $panel['account_id'],
+                ]);
+
+                $insertStmt = $pdo->prepare(
+                    'INSERT INTO withdrawals '
+                    . '(card_id, atm_id, bank_issuer_id, bank_owner_id, amount, commission_amount, total_amount, mode_safe, status, created_at) '
+                    . 'VALUES (:card_id, :atm_id, :bank_issuer_id, :bank_owner_id, :amount, :commission_amount, :total_amount, :mode_safe, :status, :created_at)'
+                );
+                $insertStmt->execute([
+                    'card_id' => (int) $cardSession['id'],
+                    'atm_id' => (int) $atmSession['id'],
+                    'bank_issuer_id' => (int) $panel['bank_issuer_id'],
+                    'bank_owner_id' => (int) $panel['bank_owner_id'],
+                    'amount' => $amount,
+                    'commission_amount' => $commission,
+                    'total_amount' => $total,
+                    'mode_safe' => 1,
+                    'status' => 'success',
+                    'created_at' => $createdAt,
+                ]);
+
+                if ($pdo->inTransaction()) {
+                    $pdo->commit();
+                }
+
+                $operation = [
+                    'amount' => $amount,
+                    'commission' => $commission,
+                    'total' => $total,
+                    'new_balance' => $newBalance,
+                    'currency' => $panel['currency'],
+                    'created_at' => $createdAt,
+                    'atm_name' => $panel['atm_name'],
+                    'atm_address' => $panel['atm_address'],
+                    'issuer_bank_name' => $panel['issuer_bank_name'],
+                    'owner_bank_name' => $panel['owner_bank_name'],
+                ];
             }
-            $errors[] = 'Недостаточно средств для снятия.';
         } else {
-            $newBalance = round($balance - $total, 2);
             $createdAt = db_now();
 
-            $updateStmt = $pdo->prepare('UPDATE accounts SET balance = :balance WHERE id = :account_id');
+            $updateStmt = $pdo->prepare(
+                'UPDATE accounts SET balance = balance - :total '
+                . 'WHERE id = :account_id AND balance >= :total'
+            );
             $updateStmt->execute([
-                'balance' => $newBalance,
+                'total' => $total,
                 'account_id' => (int) $panel['account_id'],
             ]);
 
-            $insertStmt = $pdo->prepare(
-                'INSERT INTO withdrawals '
-                . '(card_id, atm_id, bank_issuer_id, bank_owner_id, amount, commission_amount, total_amount, mode_safe, status, created_at) '
-                . 'VALUES (:card_id, :atm_id, :bank_issuer_id, :bank_owner_id, :amount, :commission_amount, :total_amount, :mode_safe, :status, :created_at)'
-            );
-            $insertStmt->execute([
-                'card_id' => (int) $cardSession['id'],
-                'atm_id' => (int) $atmSession['id'],
-                'bank_issuer_id' => (int) $panel['bank_issuer_id'],
-                'bank_owner_id' => (int) $panel['bank_owner_id'],
-                'amount' => $amount,
-                'commission_amount' => $commission,
-                'total_amount' => $total,
-                'mode_safe' => $isSafeMode ? 1 : 0,
-                'status' => 'success',
-                'created_at' => $createdAt,
-            ]);
+            if ($updateStmt->rowCount() === 0) {
+                $errors[] = 'Недостаточно средств для снятия.';
+            } else {
+                $balanceStmt = $pdo->prepare('SELECT balance FROM accounts WHERE id = :account_id');
+                $balanceStmt->execute([
+                    'account_id' => (int) $panel['account_id'],
+                ]);
+                $balanceRow = $balanceStmt->fetch();
+                if (!$balanceRow) {
+                    throw new RuntimeException('Не удалось получить баланс после операции.');
+                }
+                $newBalance = (float) $balanceRow['balance'];
 
-            if ($isSafeMode && $pdo->inTransaction()) {
-                $pdo->commit();
+                $insertStmt = $pdo->prepare(
+                    'INSERT INTO withdrawals '
+                    . '(card_id, atm_id, bank_issuer_id, bank_owner_id, amount, commission_amount, total_amount, mode_safe, status, created_at) '
+                    . 'VALUES (:card_id, :atm_id, :bank_issuer_id, :bank_owner_id, :amount, :commission_amount, :total_amount, :mode_safe, :status, :created_at)'
+                );
+                $insertStmt->execute([
+                    'card_id' => (int) $cardSession['id'],
+                    'atm_id' => (int) $atmSession['id'],
+                    'bank_issuer_id' => (int) $panel['bank_issuer_id'],
+                    'bank_owner_id' => (int) $panel['bank_owner_id'],
+                    'amount' => $amount,
+                    'commission_amount' => $commission,
+                    'total_amount' => $total,
+                    'mode_safe' => 0,
+                    'status' => 'success',
+                    'created_at' => $createdAt,
+                ]);
+
+                $operation = [
+                    'amount' => $amount,
+                    'commission' => $commission,
+                    'total' => $total,
+                    'new_balance' => $newBalance,
+                    'currency' => $panel['currency'],
+                    'created_at' => $createdAt,
+                    'atm_name' => $panel['atm_name'],
+                    'atm_address' => $panel['atm_address'],
+                    'issuer_bank_name' => $panel['issuer_bank_name'],
+                    'owner_bank_name' => $panel['owner_bank_name'],
+                ];
             }
-
-            $operation = [
-                'amount' => $amount,
-                'commission' => $commission,
-                'total' => $total,
-                'new_balance' => $newBalance,
-                'currency' => $panel['currency'],
-                'created_at' => $createdAt,
-                'atm_name' => $panel['atm_name'],
-                'atm_address' => $panel['atm_address'],
-                'issuer_bank_name' => $panel['issuer_bank_name'],
-                'owner_bank_name' => $panel['owner_bank_name'],
-            ];
         }
     } catch (Throwable $exception) {
         if (isset($pdo) && $pdo->inTransaction()) {
