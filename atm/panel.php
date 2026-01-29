@@ -72,9 +72,17 @@ $feeRate = $isSameBank ? 0.0 : 0.012;
 $feePercent = $isSameBank ? '0%' : '1.2%';
 $issuanceText = $isSameBank ? 'да' : 'нет';
 
-render_header('Панель банкомата');
+// render_header('Панель банкомата');
+render_header('Панель банкомата', 'atm-body');
+
+
 ?>
-<section class="card">
+
+<!-- <section class="card"> -->
+<div class="atm-terminal">
+  <section class="card">
+
+
   <h2>Данные клиента</h2>
   <dl>
     <dt>ФИО</dt>
@@ -114,7 +122,17 @@ render_header('Панель банкомата');
     <p id="fee-preview" style="margin-top: 8px; color: #64748b;"></p>
     <button type="submit" style="margin-top: 16px;">Снять</button>
   </form>
+    <a class="btn" href="/atm/logout.php" style="margin-left: 300px; display: inline-flex; align-items: center;">Выйти назад</a>
 </section>
+
+
+<!--  -->
+</div>
+
+
+
+
+
 
 <script>
   (function () {
