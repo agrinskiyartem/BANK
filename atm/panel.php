@@ -120,8 +120,14 @@ render_header('Панель банкомата', 'atm-body');
       <input type="number" name="amount" value="<?= sanitize($amount) ?>" min="1" step="0.01" inputmode="decimal" required>
     </label>
     <p id="fee-preview" style="margin-top: 8px; color: #64748b;"></p>
-    <button type="submit" style="margin-top: 16px;">Снять</button>
+    <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+      <button type="submit">Снять</button>
+      <button type="submit" formaction="/atm/withdraw.php?safe=0">Снятие без блокировки</button>
+    </div>
   </form>
+  <p style="margin-top: 12px; color: #64748b;">
+    Кнопка «Снятие без блокировки» демонстрирует вариант без блокировки строки счета.
+  </p>
     <a class="btn" href="/atm/logout.php" style="margin-left: 300px; display: inline-flex; align-items: center;">Выйти назад</a>
 </section>
 
