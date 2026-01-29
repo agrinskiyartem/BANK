@@ -57,12 +57,11 @@ if (!empty($filters)) {
     $whereSql = 'WHERE ' . implode(' AND ', $filters);
 }
 
-$clientNameSql = users_full_name_sql('u', 'client_name');
 $sql =
     'SELECT w.id, w.created_at, w.amount, w.commission_amount, w.total_amount, w.status, w.mode_safe, w.error_reason, '
     . 'a.name AS atm_name, a.address AS atm_address, '
     . 'owner.name AS bank_owner_name, issuer.name AS bank_issuer_name, '
-    . 'c.card_number, ' . $clientNameSql . ', u.login AS client_login '
+    . 'c.card_number, u.full_name AS client_name, u.login AS client_login '
     . 'FROM withdrawals AS w '
     . 'JOIN cards AS c ON c.id = w.card_id '
     . 'JOIN users AS u ON u.id = c.client_id '

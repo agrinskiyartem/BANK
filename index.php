@@ -98,30 +98,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
+            $userStmt = $pdo->prepare('INSERT INTO users (login, password_hash, role, full_name, created_at, updated_at, is_active) VALUES (:login, :password_hash, :role, :full_name, :created_at, :updated_at, 1)');
             $now = db_now();
-            $userColumns = ['login', 'password_hash', 'role', 'created_at', 'updated_at', 'is_active'];
-            $userPlaceholders = [':login', ':password_hash', ':role', ':created_at', ':updated_at', ':is_active'];
-            $userParams = [
+            $userStmt->execute([
                 'login' => $form['login'],
                 'password_hash' => password_hash($form['password'], PASSWORD_DEFAULT),
                 'role' => 'client',
+                'full_name' => $form['full_name'],
                 'created_at' => $now,
                 'updated_at' => $now,
-                'is_active' => 1,
-            ];
-
-            if (users_has_full_name()) {
-                $userColumns[] = 'full_name';
-                $userPlaceholders[] = ':full_name';
-                $userParams['full_name'] = $form['full_name'];
-            }
-
-            $userStmt = $pdo->prepare(sprintf(
-                'INSERT INTO users (%s) VALUES (%s)',
-                implode(', ', $userColumns),
-                implode(', ', $userPlaceholders)
-            ));
-            $userStmt->execute($userParams);
+            ]);
 
             $userId = (int) $pdo->lastInsertId();
             $expiresAt = (new DateTimeImmutable('+3 years'))->format('Y-m-d');
