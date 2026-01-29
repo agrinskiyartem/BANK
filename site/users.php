@@ -20,9 +20,8 @@ function mask_card_number(string $number): string
     return substr($clean, 0, 4) . ' **** **** ' . substr($clean, -4);
 }
 
-$fullNameSql = users_full_name_sql('users', 'full_name');
 $usersStmt = db()->query(
-    'SELECT users.id, users.login, users.role, users.is_active, users.created_at, ' . $fullNameSql . ', '
+    'SELECT users.id, users.login, users.role, users.is_active, users.created_at, users.full_name, '
     . "CASE WHEN users.role = 'client' THEN users.id ELSE NULL END AS client_id "
     . 'FROM users '
     . 'ORDER BY users.created_at DESC'

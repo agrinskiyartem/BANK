@@ -39,37 +39,6 @@ function db_now(): string
     return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 }
 
-function users_has_full_name(): bool
-{
-    static $hasFullName = null;
-
-    if ($hasFullName !== null) {
-        return $hasFullName;
-    }
-
-    $stmt = db()->prepare(
-        'SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() '
-        . 'AND table_name = :table AND column_name = :column LIMIT 1'
-    );
-    $stmt->execute(['table' => 'users', 'column' => 'full_name']);
-    $hasFullName = (bool) $stmt->fetchColumn();
-
-    return $hasFullName;
-}
-
-function users_full_name_sql(string $tableAlias = 'users', string $as = 'full_name'): string
-{
-    if (users_has_full_name()) {
-        return sprintf(
-            "COALESCE(NULLIF(%s.full_name, ''), %s.login) AS %s",
-            $tableAlias,
-            $tableAlias,
-            $as
-        );
-    }
-
-    return sprintf('%s.login AS %s', $tableAlias, $as);
-}
 
 
 
