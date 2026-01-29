@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-const SESSION_TIMEOUT_SECONDS = 120;
-const SESSION_WARNING_SECONDS = 30;
+const SESSION_TIMEOUT_SECONDS = 600;
+const SESSION_WARNING_SECONDS = 60;
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
