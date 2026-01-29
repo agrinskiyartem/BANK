@@ -24,6 +24,17 @@ $atms = $atmsStmt->fetchAll();
 render_header('Панель администратора');
 ?>
 <section class="card">
+  <h2>Административные разделы</h2>
+  <p>Перейдите в нужный раздел для управления данными и просмотра отчетов.</p>
+  <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+    <a class="btn" href="/site/banks.php">Банки</a>
+    <a class="btn" href="/site/atms.php">Банкоматы</a>
+    <a class="btn" href="/site/users.php">Пользователи</a>
+    <a class="btn" href="/site/analytics.php">Аналитика</a>
+  </div>
+</section>
+
+<section class="card">
   <h2>Списания по всем клиентам</h2>
   <p>Используйте фильтры для поиска операций по банкам, банкоматам и датам.</p>
 
