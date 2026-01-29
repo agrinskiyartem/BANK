@@ -136,9 +136,23 @@ if (empty($errors)) {
     }
 }
 
-render_header('Снятие наличных');
+
+
+
+
+// render_header('Снятие наличных');
+render_header('Снятие наличных', 'atm-body');
+
+
+
+
 ?>
-<section class="card">
+<!-- <section class="card"> -->
+<div class="atm-terminal">
+  <section class="card">
+
+
+
   <h2>Результат операции</h2>
   <p style="color: #64748b;">Режим конкурентного доступа: <?= sanitize($modeLabel) ?>.</p>
 
@@ -171,5 +185,9 @@ render_header('Снятие наличных');
     <a href="/atm/panel.php" style="display: inline-block; margin-top: 16px;">Вернуться в панель</a>
   <?php endif; ?>
 </section>
+
+<!--  -->
+</div>
+
 <?php
 render_footer();
