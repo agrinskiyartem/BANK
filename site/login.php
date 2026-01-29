@@ -14,6 +14,7 @@ $form = [
     'password' => '',
 ];
 
+
 if (isset($_GET['msg'])) {
     $message = (string) $_GET['msg'];
     if ($message === 'logout') {
@@ -22,6 +23,7 @@ if (isset($_GET['msg'])) {
         set_flash('warning', 'Получено сообщение: ' . $message);
     }
 }
+
 
 if (is_logged_in()) {
     $user = current_user();
@@ -65,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 render_header('Вход на сайт');
 ?>
 <section class="card">
+  <a class="btn" href="/index.php" style="display: inline-flex; margin-bottom: 16px; text-decoration: none;">Назад</a>
   <h2>Авторизация</h2>
   <p>Введите логин и пароль для входа в личный кабинет.</p>
 
