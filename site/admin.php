@@ -32,11 +32,11 @@ render_header('Панель администратора');
   <form id="withdrawal-filters" style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
     <label>
       Дата с
-      <input type="date" name="date_from" placeholder="дд/мм/гггг" lang="ru">
+      <input type="text" name="date_from" placeholder="дд/мм/гггг" inputmode="numeric" pattern="\\d{2}/\\d{2}/\\d{4}">
     </label>
     <label>
       Дата по
-      <input type="date" name="date_to" placeholder="дд/мм/гггг" lang="ru">
+      <input type="text" name="date_to" placeholder="дд/мм/гггг" inputmode="numeric" pattern="\\d{2}/\\d{2}/\\d{4}">
     </label>
     <label>
       Банк
@@ -114,6 +114,36 @@ render_header('Панель администратора');
       return date.toLocaleString('ru-RU');
     }
 
+    function parseDateInput(value, label) {
+      if (!value) {
+        return { value: '', timestamp: null };
+      }
+
+      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) {
+        return { error: `${label} должна быть в формате дд/мм/гггг.` };
+      }
+
+      const day = Number(match[1]);
+      const month = Number(match[2]);
+      const year = Number(match[3]);
+      const date = new Date(Date.UTC(year, month - 1, day));
+
+      if (
+        Number.isNaN(date.getTime())
+        || date.getUTCFullYear() !== year
+        || date.getUTCMonth() !== month - 1
+        || date.getUTCDate() !== day
+      ) {
+        return { error: `${label} указана некорректно.` };
+      }
+
+      return {
+        value: `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        timestamp: date.getTime(),
+      };
+    }
+
     function renderTable() {
       tableBody.innerHTML = '';
 
@@ -152,11 +182,19 @@ render_header('Панель администратора');
     }
 
     function validateFilters() {
-      const dateFrom = form.date_from.value;
-      const dateTo = form.date_to.value;
+      const dateFromRaw = form.date_from.value.trim();
+      const dateToRaw = form.date_to.value.trim();
+      const parsedFrom = parseDateInput(dateFromRaw, 'Дата "с"');
+      const parsedTo = parseDateInput(dateToRaw, 'Дата "по"');
       const errors = [];
 
-      if (dateFrom && dateTo && dateFrom > dateTo) {
+      if (parsedFrom.error) {
+        errors.push(parsedFrom.error);
+      }
+      if (parsedTo.error) {
+        errors.push(parsedTo.error);
+      }
+      if (parsedFrom.timestamp !== null && parsedTo.timestamp !== null && parsedFrom.timestamp > parsedTo.timestamp) {
         errors.push('Дата "с" не может быть позже даты "по".');
       }
 
@@ -173,16 +211,16 @@ render_header('Панель администратора');
 
     function buildParams() {
       const params = new URLSearchParams();
-      const dateFrom = form.date_from.value;
-      const dateTo = form.date_to.value;
+      const dateFrom = parseDateInput(form.date_from.value.trim(), 'Дата "с"');
+      const dateTo = parseDateInput(form.date_to.value.trim(), 'Дата "по"');
       const bankId = form.bank_id.value;
       const atmId = form.atm_id.value;
 
-      if (dateFrom) {
-        params.set('date_from', dateFrom);
+      if (dateFrom.value) {
+        params.set('date_from', dateFrom.value);
       }
-      if (dateTo) {
-        params.set('date_to', dateTo);
+      if (dateTo.value) {
+        params.set('date_to', dateTo.value);
       }
       if (bankId) {
         params.set('bank_id', bankId);
