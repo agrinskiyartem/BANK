@@ -63,11 +63,11 @@ render_header('Кабинет клиента');
   <form id="withdrawal-filters" style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
     <label>
       Дата с
-      <input type="date" name="date_from">
+      <input type="date" name="date_from" placeholder="дд/мм/гггг" lang="ru">
     </label>
     <label>
       Дата по
-      <input type="date" name="date_to">
+      <input type="date" name="date_to" placeholder="дд/мм/гггг" lang="ru">
     </label>
     <label>
       Банк-владелец

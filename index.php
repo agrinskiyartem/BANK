@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-render_header('Bank ATM', '', false);
+render_header('Единная банковская система', '', false);
 ?>
 <section class="card" style="margin-bottom: 24px;">
   <h2>Выберите вход</h2>
