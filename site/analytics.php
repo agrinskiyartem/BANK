@@ -23,11 +23,11 @@ render_header('Аналитика по банкоматам');
   <form id="analytics-filters" style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
     <label>
       Дата с
-      <input type="date" name="date_from">
+      <input type="date" name="date_from" placeholder="дд/мм/гггг" lang="ru">
     </label>
     <label>
       Дата по
-      <input type="date" name="date_to">
+      <input type="date" name="date_to" placeholder="дд/мм/гггг" lang="ru">
     </label>
     <div style="display: flex; gap: 8px; align-items: flex-end;">
       <button type="submit">Показать</button>
